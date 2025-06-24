@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { authService } from "@/services/authService";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -42,6 +43,7 @@ const Login = () => {
         });
         alert("Login successful!");
         console.log(res); // or redirect to dashboard
+        Navigate("/dashboard");
       }
     } catch (err) {
       setError(err.message || "Something went wrong.");
