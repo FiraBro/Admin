@@ -83,28 +83,35 @@ export const adminService = {
     }
   },
 
-  getApplications: async () => {
+  getApplications: async (token) => {
+    const tokens = localStorage.getItem("token");
+    console.log(tokens);
     try {
-      const response = await axios.get(`${API_URL}/policy/admin/all`);
-      return response.data;
+      const { data } = await axios.get(`${API_URL}/policy/admin/all`, {
+        headers: {
+          Authorization: `Bearer ${tokens}`,
+        },
+      });
+      return data;
     } catch (error) {
-      throw error.response?.data || { message: "Failed to fetch applications" };
+      const message =
+        error.response?.data?.message || "Failed to fetch applications";
+      throw new Error(message);
     }
   },
 
   updateApplicationStatus: async (id, status) => {
-    try {
-      const response = await axios.put(`${API_URL}/policy/admin/${id}/status`, {
-        status,
-      });
-      return response.data;
-    } catch (error) {
-      throw (
-        error.response?.data || {
-          message: "Failed to update application status",
-        }
-      );
-    }
+    const token = localStorage.getItem("token");
+    const { data } = await axios.put(
+      `${API_URL}/policy/admin/${id}/status`,
+      { status }, // <-- body payload
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return data;
   },
 
   getClaims: async () => {
