@@ -1,8 +1,12 @@
-import React, { useState } from "react";
 import { authService } from "@/services/authService";
-import { Navigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
+  const { login } = useContext(AuthContext);
+
+  const navigate = useNavigate(); // useNavigate hook for programmatic navigation
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -34,16 +38,16 @@ const Login = () => {
           ...formData,
           role: "admin",
         });
-        alert("Registered successfully!");
         setIsRegister(false); // Switch to login after registration
       } else {
         const res = await authService.login({
           email: formData.email,
           password: formData.password,
         });
-        alert("Login successful!");
-        console.log(res); // or redirect to dashboard
-        Navigate("/dashboard");
+        const { token } = res;
+        const { role } = res.user;
+        login(token, role); // ✅ update AuthContext
+        navigate("/dashboard"); // ✅ seamless navigation
       }
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -75,7 +79,7 @@ const Login = () => {
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full p-2 border rounded"
               />
               <input
                 type="tel"
@@ -84,7 +88,7 @@ const Login = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full p-2 border rounded"
               />
               <input
                 type="text"
@@ -93,7 +97,7 @@ const Login = () => {
                 value={formData.address}
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full p-2 border rounded"
               />
               <input
                 type="date"
@@ -101,13 +105,13 @@ const Login = () => {
                 value={formData.dateOfBirth}
                 onChange={handleChange}
                 required
-                className="input"
+                className="w-full p-2 border rounded"
               />
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="input"
+                className="w-full p-2 border rounded"
               >
                 <option>Male</option>
                 <option>Female</option>
@@ -122,7 +126,7 @@ const Login = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="input"
+            className="w-full p-2 border rounded"
           />
           <input
             type="password"
@@ -131,7 +135,7 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            className="input"
+            className="w-full p-2 border rounded"
           />
 
           <button
