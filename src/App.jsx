@@ -11,23 +11,17 @@ import Applications from "./components/Applications";
 import Claims from "./components/Claims";
 import Users from "./components/Users";
 import Login from "./page/Login";
-import { useState, useEffect } from "react";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const { isLoggedIn, role } = useContext(AuthContext);
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setToken(localStorage.getItem("token"));
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  const isAdmin = isLoggedIn && role === "admin";
 
   return (
     <Router>
-      {token ? (
+      {isAdmin ? (
         <div className="flex h-screen bg-gray-100">
           <Sidebar />
           <div className="flex-1 overflow-auto">
@@ -44,7 +38,7 @@ function App() {
         </div>
       ) : (
         <Routes>
-          <Route path="/login" element={<Login setToken={setToken} />} />
+          <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       )}
