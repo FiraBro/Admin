@@ -1,5 +1,7 @@
-import { NavLink } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+
 import {
   FaTimes,
   FaBars,
@@ -9,11 +11,14 @@ import {
   FaHandHoldingUsd,
   FaUsers,
   FaCog,
+  FaSignOutAlt,
 } from "react-icons/fa";
 
 const Sidebar = () => {
+  const { logout } = useContext(AuthContext);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -29,6 +34,12 @@ const Sidebar = () => {
     handleResize(); // Initialize
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    setSidebarOpen(false);
+    navigate("/login");
+  };
 
   return (
     <>
@@ -70,32 +81,46 @@ const Sidebar = () => {
             to="/dashboard"
             icon={<FaChartLine className="w-5 h-5" />}
             label="Dashboard"
+            closeSidebar={() => setSidebarOpen(false)}
           />
           <NavItem
             to="/plans"
             icon={<FaFileAlt className="w-5 h-5" />}
             label="Insurance Plans"
+            closeSidebar={() => setSidebarOpen(false)}
           />
           <NavItem
             to="/applications"
             icon={<FaClipboardCheck className="w-5 h-5" />}
             label="Applications"
+            closeSidebar={() => setSidebarOpen(false)}
           />
           <NavItem
             to="/claims"
             icon={<FaHandHoldingUsd className="w-5 h-5" />}
             label="Claims Review"
+            closeSidebar={() => setSidebarOpen(false)}
           />
           <NavItem
             to="/users"
             icon={<FaUsers className="w-5 h-5" />}
             label="User Management"
+            closeSidebar={() => setSidebarOpen(false)}
           />
           <NavItem
             to="/settings"
             icon={<FaCog className="w-5 h-5" />}
             label="Settings"
+            closeSidebar={() => setSidebarOpen(false)}
           />
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center px-6 py-3 w-full text-left hover:bg-blue-700 transition-all duration-300"
+          >
+            <FaSignOutAlt className="w-5 h-5" />
+            <span className="ml-3">Logout</span>
+          </button>
         </nav>
 
         <div className="p-4 border-t border-blue-700">
@@ -114,7 +139,7 @@ const Sidebar = () => {
   );
 };
 
-const NavItem = ({ to, icon, label }) => {
+const NavItem = ({ to, icon, label, closeSidebar }) => {
   return (
     <NavLink
       to={to}
@@ -125,7 +150,7 @@ const NavItem = ({ to, icon, label }) => {
       }
       onClick={() => {
         if (window.innerWidth < 768) {
-          setSidebarOpen(false);
+          closeSidebar();
         }
       }}
     >
