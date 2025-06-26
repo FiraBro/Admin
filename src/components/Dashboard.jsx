@@ -1,15 +1,53 @@
+import { useEffect, useState } from "react";
+import { dashService } from "../services/dashService";
 import { Fade } from "react-awesome-reveal";
-import BarChart from "./Charts/BarChart";
-import PieChart from "./Charts/PieChart";
-import LineChart from "./Charts/LineChart";
+
+import BarChartBox from "./Charts/BarChartBox";
+import PieChartBox from "./Charts/PieChartBox";
+import LineChartBox from "./Charts/LineChartBox";
 
 const Dashboard = () => {
-  const stats = {
-    totalUsers: 1245,
-    totalPolicies: 876,
-    approvedClaims: 342,
-    revenue: "$124,567",
-  };
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalPolicies: 0,
+    approvedClaims: 0,
+    totalClaims: 0,
+    revenue: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [users, policies, claims, revenue, totalClaims] =
+          await Promise.all([
+            dashService.AllUserCount(),
+            dashService.AllPlanCount(),
+            dashService.AllAprovedClaim(),
+            dashService.TotalPremium(),
+            dashService.TotalClaims(),
+          ]);
+          console.log(totalClaims)
+        setStats({
+          totalUsers: users.count || 0,
+          totalPolicies: policies.count || 0,
+          approvedClaims: claims.count || 0,
+          totalClaims: totalClaims.count || 0,
+          revenue: revenue.data.totalPremiums || 0,
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats:", err);
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return <div className="p-4">Loading dashboard...</div>;
+  }
 
   return (
     <div className="p-4 md:p-8">
@@ -40,7 +78,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Revenue"
-          value={stats.revenue}
+          value={`$${stats.revenue}`}
           color="yellow"
           icon="💰"
         />
@@ -50,13 +88,16 @@ const Dashboard = () => {
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">Monthly Policies</h3>
           <div className="h-64 md:h-80">
-            <BarChart />
+            <BarChartBox totalPolicies={stats.totalPolicies} />
           </div>
         </div>
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">Claims Distribution</h3>
           <div className="h-64 md:h-80">
-            <PieChart />
+            <PieChartBox
+              approvedClaims={stats.approvedClaims}
+              totalClaims={stats.totalClaims}
+            />
           </div>
         </div>
       </div>
@@ -64,7 +105,7 @@ const Dashboard = () => {
       <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold mb-4">Revenue Trend</h3>
         <div className="h-64 md:h-80">
-          <LineChart />
+          <LineChartBox revenue={stats.revenue} />
         </div>
       </div>
     </div>
