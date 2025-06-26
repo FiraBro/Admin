@@ -37,7 +37,12 @@ export const authService = {
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
+
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role); // ✅ Store role for access control
+
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: "Login failed" };
@@ -46,6 +51,7 @@ export const authService = {
 
   logout: () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role"); // ✅ Remove role on logout
   },
 
   getToken: () => {
@@ -53,7 +59,7 @@ export const authService = {
   },
 
   authHeader: () => {
-    const token = userService.getToken();
+    const token = authService.getToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   },
 };
